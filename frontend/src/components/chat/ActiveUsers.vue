@@ -2,7 +2,7 @@
     <div class="active-users-card">
         <div class="active-users" v-for="i in 5">
             <div class="user-image">
-                <img src="https://placehold.co/45x45" alt="user image" />
+                <img src="https://placehold.co/40x40" alt="user image" />
             </div>
 
             <div class="chat-info">
@@ -29,7 +29,9 @@ $border-color: #dee2e6;
         transition: 0.3s;
         padding: 8px 16px;
         align-items: center;
-        border-radius: 12px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        box-shadow: 0 0 2px #999;
 
         .user-image {
             display: flex;
@@ -38,12 +40,16 @@ $border-color: #dee2e6;
 
             img {
                 border-radius: 50%;
+                height: 40px;
+                width: 40px;
             }
         }
 
         .chat-info {
             p {
                 margin: 0;
+                color: $app-primary-color;
+                font-size: 13px;
             }
 
             #name {
@@ -51,7 +57,7 @@ $border-color: #dee2e6;
             }
         }
         &:hover {
-            background-color: $app-primary-color;
+            box-shadow: 0 0 5px 1px $app-primary-color;
             cursor: pointer;
             color: #fff;
         }
