@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="chat">
-            <ActiveUsers></ActiveUsers>
+            <ActiveUsers :mySocketId="mySocketId" :activeUserLists="activeUserLists"></ActiveUsers>
             <ChatMessages></ChatMessages>
         </div>
     </div>
@@ -19,12 +19,31 @@ export default {
     },
 
     data() {
-        return {};
+        return {
+            name: 'Mr_' + parseInt(Math.random() * 100),
+            mySocketId: '',
+            activeUserLists: [
+                {
+                    dsd: 4
+                }
+            ]
+        };
     },
     mounted() {
         const socket = io('http://localhost:3000');
+
         socket.on('connect', () => {
-            console.log(socket.id); // x8WIv7-mJelg7on_ALbx
+            this.mySocketId = socket.id;
+            console.log('connected to server. id: ' + socket.id);
+        });
+
+        socket.emit('joined_to_server', { name: this.name });
+
+        socket.on('active_users', (users) => {
+            //reactive data will work for only component which is been reloaded...use store to
+            this.activeUserLists = users;
+            console.log(this.activeUserLists);
+            console.log(this.mySocketId);
         });
     }
 };

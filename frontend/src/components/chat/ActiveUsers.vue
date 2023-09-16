@@ -1,17 +1,25 @@
 <template>
     <div class="active-users-card">
-        <div class="active-users" v-for="i in 5">
-            <div class="user-image">
-                <img src="https://placehold.co/40x40" alt="user image" />
-            </div>
+        <template v-for="user in activeUserLists">
+            <div class="active-users" v-if="mySocketId != user.socket_id">
+                <div class="user-image">
+                    <img src="https://placehold.co/40x40" alt="user image" />
+                </div>
 
-            <div class="chat-info">
-                <p id="name">Name</p>
-                <p>last massage</p>
+                <div class="chat-info">
+                    <p id="name">{{ user.name }}</p>
+                    <p>{{ user.socket_id }}</p>
+                </div>
             </div>
-        </div>
+        </template>
     </div>
 </template>
+
+<script>
+export default {
+    props: ['activeUserLists', 'mySocketId']
+};
+</script>
 
 <style lang="scss">
 $app-primary-color: #4caf50;
