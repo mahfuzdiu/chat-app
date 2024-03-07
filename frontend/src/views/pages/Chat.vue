@@ -1,8 +1,8 @@
 <template>
     <div>
         <div class="chat">
-            <ActiveUsers :mySocketId="mySocketId" :activeUserLists="activeUserLists"></ActiveUsers>
-            <ChatMessages></ChatMessages>
+            <ActiveUsers :mySocketId="mySocketId" :activeUserLists="activeUserLists" @emitSelecteduser="emitSelecteduser"></ActiveUsers>
+            <ChatMessages :messageArray="messageArray" :selectedUser="selectedUser" @emitSendMessage="emitSendMessage"></ChatMessages>
         </div>
     </div>
 </template>
@@ -20,8 +20,11 @@ export default {
 
     data() {
         return {
+            socket: '',
             name: 'Mr_' + parseInt(Math.random() * 100),
             mySocketId: '',
+            selectedUser: {},
+            messageArray: [],
             activeUserLists: [
                 {
                     dsd: 4
@@ -30,21 +33,37 @@ export default {
         };
     },
     mounted() {
-        const socket = io('http://localhost:3000');
+        this.socket = io('http://localhost:3000');
 
-        socket.on('connect', () => {
-            this.mySocketId = socket.id;
-            console.log('connected to server. id: ' + socket.id);
+        this.socket.on('connect', () => {
+            this.mySocketId = this.socket.id;
+            // console.log('connected to server. id: ' + this.socket.id);
         });
 
-        socket.emit('joined_to_server', { name: this.name });
+        //sending to server
+        this.socket.emit('joined_to_server', { name: this.name });
 
-        socket.on('active_users', (users) => {
+        //receiving from server
+        this.socket.on('active_users', (users) => {
             //reactive data will work for only component which is been reloaded...use store to
             this.activeUserLists = users;
-            console.log(this.activeUserLists);
-            console.log(this.mySocketId);
+            //console.log(this.activeUserLists);
         });
+
+        this.socket.on('messageChannel', (message) => {
+            this.messageArray.push({
+                type: 'incoming_message',
+                message: message
+            });
+        });
+    },
+    methods: {
+        emitSelecteduser(user) {
+            this.selectedUser = user;
+        },
+        emitSendMessage(data) {
+            this.socket.emit('broadcast', data);
+        }
     }
 };
 </script>

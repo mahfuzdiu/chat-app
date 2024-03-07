@@ -1,7 +1,7 @@
 <template>
     <div class="active-users-card">
         <template v-for="user in activeUserLists">
-            <div class="active-users" v-if="mySocketId != user.socket_id">
+            <div class="active-users" v-if="mySocketId != user.socket_id" @click="selectedUser(user)">
                 <div class="user-image">
                     <img src="https://placehold.co/40x40" alt="user image" />
                 </div>
@@ -17,7 +17,12 @@
 
 <script>
 export default {
-    props: ['activeUserLists', 'mySocketId']
+    props: ['activeUserLists', 'mySocketId'],
+    methods: {
+        selectedUser(user) {
+            this.$emit('emitSelecteduser', user);
+        }
+    }
 };
 </script>
 

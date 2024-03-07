@@ -17,21 +17,18 @@ io.on("connection", (socket) => {
 
     let arrayOfusers = Array.from(users.values());
 
-    console.log(arrayOfusers);
-    console.log(io.sockets);
-
-    //broadcast to self
-    // socket.emit('active_users', arrayOfusers)
-
-    //broadcast to every connected users except self
-    //socket.broadcast.emit("active_users", arrayOfusers);
-
     //bloardcast to all connected users including myself
     io.sockets.emit("active_users", arrayOfusers);
   });
 
+  socket.on("broadcast", (data) => {
+    socket.broadcast.to(data.socket_id).emit("messageChannel", data.message);
+  });
+
+  //disconnect event get fired on browser reload
   socket.on("disconnect", (reason) => {
     console.log("disconnecting on reload...");
+    console.log("removing disconnected user/socket id...");
     users.delete(socket.id);
 
     let arrayOfusers = Array.from(users.values());

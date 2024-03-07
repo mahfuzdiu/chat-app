@@ -4,31 +4,73 @@
             <img src="https://placehold.co/45x45" alt="" />
 
             <div class="status">
-                <p class="name">Name</p>
-                <p>Active 10 min ago</p>
+                <p class="name">{{ selectedUser.name }}</p>
+                <p>{{ selectedUser.id }}</p>
             </div>
         </header>
 
         <div class="message-section">
-            <div class="messages">
-                <div v-for="i in 5">
-                    <p class="sent-message">Hi, this is a message from client. sds sd sd sdsdsds sdsdsssssssss sssssssss ssssssssss ssssssss sssssssaa aaaaaaaaa aaaaaaaa aaaaaaa aaaaaa</p>
-                    <p class="received-message">Hi, this is a message from server, Hi, this is a message from client. sds sd sd sdsdsds sdsdsssssssss sssssssss ssssssssss ssssssss sssssssaa aaaaaaaaa aaaaaaaa aaaaaaa aaaaaa</p>
+            <div class="messages" ref="messagesRef">
+                <div v-for="message in messageArray">
+                    <p :class="message.type">{{ message.message }}</p>
                 </div>
             </div>
 
-            <div class="message-box">
-                <InputText size="small" type="text" />
-                <Button icon="pi pi-send" text raised aria-label="Filter" />
+            <div class="chat_box">
+                <form @submit.prevent="sendMessage">
+                    <InputText size="small" type="text" v-model="message" />
+                    <Button type="submit" icon="pi pi-send" text raised aria-label="Filter" />
+                </form>
             </div>
         </div>
     </div>
 </template>
 
-<style lang="scss">
-$app-primary-color: #4caf50;
+<script>
+export default {
+    props: ['selectedUser', 'messageArray'],
+    data() {
+        return {
+            message: '',
+            tempMessage: ''
+        };
+    },
+    methods: {
+        sendMessage() {
+            this.tempMessage = this.message;
+            this.message = '';
+
+            this.messageArray.push({
+                type: 'outgoing_message',
+                message: this.tempMessage
+            });
+
+            this.$emit('emitSendMessage', {
+                message: this.tempMessage,
+                socket_id: this.selectedUser.socket_id
+            });
+        }
+    },
+
+    watch: {
+        messageArray: {
+            handler: function (newValue) {
+                //gets meessage box dom height after it finish rendering
+                this.$nextTick(function () {
+                    let messageBox = this.$refs.messagesRef;
+                    messageBox.scrollTop = messageBox.scrollHeight;
+                });
+            },
+            deep: true
+        }
+    }
+};
+</script>
+
+<style lang="scss" scoped>
+$outgoingMessageBoxColor: #fff;
 $border-color: #dee2e6;
-$app-inverse-primary-color: #2f4858;
+$incomingMessageBoxColor: #4caf50;
 
 .chat-section {
     border: 1px solid $border-color;
@@ -63,14 +105,14 @@ $app-inverse-primary-color: #2f4858;
     }
 
     .message-section {
-        padding: 15px;
+        // padding: 15px;
 
         .messages {
             border: 1px solid $border-color;
             height: calc(100vh - 320px);
-            margin-bottom: 10px;
             padding: 15px;
-            overflow: scroll;
+            padding-bottom: 0 !important;
+            overflow: auto;
             scroll-behavior: smooth;
 
             &::-webkit-scrollbar {
@@ -78,46 +120,49 @@ $app-inverse-primary-color: #2f4858;
             }
 
             &::-webkit-scrollbar-thumb {
-                background-color: $app-inverse-primary-color;
-                outline: 1px solid $app-inverse-primary-color;
+                background-color: incomingMessageBoxColor;
+                outline: 1px solid incomingMessageBoxColor;
             }
 
-            .sent-message,
-            .received-message {
+            .incoming_message,
+            .outgoing_message {
                 padding: 5px 15px;
                 margin-bottom: 10px;
-                color: #fff;
                 max-width: 400px;
-            }
-
-            .sent-message {
-                background-color: $app-primary-color;
-                border-radius: 15px 5px 15px 0;
-            }
-
-            .received-message {
-                background-color: $app-inverse-primary-color;
-                border-radius: 5px 15px 0 15px;
+                box-shadow: 0 0 3px #a5a5a5;
+                border-radius: 3px;
                 width: fit-content;
+            }
+
+            .outgoing_message {
+                background-color: $outgoingMessageBoxColor;
+                color: #222;
+            }
+
+            .incoming_message {
+                color: #fff;
+                background-color: $incomingMessageBoxColor;
                 margin-left: auto;
                 max-width: 400px;
             }
         }
 
-        .message-box {
-            display: flex;
-            justify-content: center;
+        .chat_box {
+            form {
+                display: flex;
+                justify-content: center;
 
-            input {
-                height: 50px;
-                box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
-                border-radius: 4px 0 0 4px;
-                width: 100%;
-            }
+                input {
+                    height: 40px;
+                    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+                    // border-radius: 3px 0 0 3px;
+                    width: 100%;
+                }
 
-            button {
-                border-radius: 0 4px 4px 0;
-                margin-left: 3px;
+                button {
+                    border-radius: 0 4px 4px 0;
+                    // margin-left: 3px;
+                }
             }
         }
     }
