@@ -1,8 +1,9 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import '@/assets/styles.scss'
-import '@/assets/themes/saga/saga-green/theme.scss'
+import '@/assets/styles.scss';
+import '@/assets/themes/saga/saga-green/theme.scss';
+import { createPinia } from 'pinia';
 
 import PrimeVue from 'primevue/config';
 import AutoComplete from 'primevue/autocomplete';
@@ -107,12 +108,14 @@ import BlockViewer from '@/components/BlockViewer.vue';
 import '@/assets/styles.scss';
 
 const app = createApp(App);
+const pinia = createPinia();
 
 app.use(router);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
 app.use(DialogService);
 app.use(ConfirmationService);
+app.use(pinia);
 
 app.directive('tooltip', Tooltip);
 app.directive('badge', BadgeDirective);

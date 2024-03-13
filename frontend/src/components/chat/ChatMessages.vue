@@ -11,7 +11,7 @@
 
         <div class="message-section">
             <div class="messages" ref="messagesRef">
-                <div v-for="message in messageArray">
+                <div v-for="message in messageArray.data">
                     <p :class="message.type">{{ message.message }}</p>
                 </div>
             </div>
@@ -26,45 +26,44 @@
     </div>
 </template>
 
-<script>
-export default {
-    props: ['selectedUser', 'messageArray'],
-    data() {
-        return {
-            message: '',
-            tempMessage: ''
-        };
-    },
-    methods: {
-        sendMessage() {
-            this.tempMessage = this.message;
-            this.message = '';
+<script setup>
+import { ref } from 'vue';
+const props = defineProps(['selectedUser', 'messageArray']);
+const emit = defineEmits(['emitSendMessage']);
 
-            this.messageArray.push({
-                type: 'outgoing_message',
-                message: this.tempMessage
-            });
+let message = ref('');
+let tempMessage = ref('');
 
-            this.$emit('emitSendMessage', {
-                message: this.tempMessage,
-                socket_id: this.selectedUser.socket_id
-            });
-        }
-    },
+function sendMessage() {
+    if (message.value) {
+        tempMessage.value = message.value;
+        message.value = '';
 
-    watch: {
-        messageArray: {
-            handler: function (newValue) {
-                //gets meessage box dom height after it finish rendering
-                this.$nextTick(function () {
-                    let messageBox = this.$refs.messagesRef;
-                    messageBox.scrollTop = messageBox.scrollHeight;
-                });
-            },
-            deep: true
-        }
+        props.messageArray.data.push({
+            type: 'outgoing_message',
+            message: tempMessage.value
+        });
+
+        emit('emitSendMessage', {
+            message: tempMessage.value,
+            socket_id: props.selectedUser.socket_id
+        });
     }
-};
+}
+
+//chat ui update on every message
+//    watch: {
+//        messageArray: {
+//            handler: function (newValue) {
+//                //gets meessage box dom height after it finish rendering
+//                this.$nextTick(function () {
+//                    let messageBox = this.$refs.messagesRef;
+//                    messageBox.scrollTop = messageBox.scrollHeight;
+//                });
+//            },
+//            deep: true
+//        }
+//    }
 </script>
 
 <style lang="scss" scoped>
@@ -108,7 +107,6 @@ $incomingMessageBoxColor: #4caf50;
         // padding: 15px;
 
         .messages {
-            border: 1px solid $border-color;
             height: calc(100vh - 320px);
             padding: 15px;
             padding-bottom: 0 !important;
@@ -154,14 +152,16 @@ $incomingMessageBoxColor: #4caf50;
 
                 input {
                     height: 40px;
-                    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
-                    // border-radius: 3px 0 0 3px;
                     width: 100%;
+                    border-radius: 0;
+                    border-left: 0;
+                    border-right: 0;
                 }
 
                 button {
                     border-radius: 0 4px 4px 0;
-                    // margin-left: 3px;
+                    box-shadow: none;
+                    border: 1px solid $incomingMessageBoxColor;
                 }
             }
         }

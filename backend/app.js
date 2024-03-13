@@ -10,6 +10,8 @@ let users = new Map();
 
 io.on("connection", (socket) => {
   socket.on("joined_to_server", (data) => {
+    console.log(io.sockets);
+
     users.set(socket.id, {
       name: data.name,
       socket_id: socket.id,
@@ -27,10 +29,8 @@ io.on("connection", (socket) => {
 
   //disconnect event get fired on browser reload
   socket.on("disconnect", (reason) => {
-    console.log("disconnecting on reload...");
-    console.log("removing disconnected user/socket id...");
+    console.log("disconnect event: id - " + socket.id);
     users.delete(socket.id);
-
     let arrayOfusers = Array.from(users.values());
     io.sockets.emit("active_users", arrayOfusers);
   });

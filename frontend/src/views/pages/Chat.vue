@@ -1,71 +1,68 @@
 <template>
     <div>
         <div class="chat">
-            <ActiveUsers :mySocketId="mySocketId" :activeUserLists="activeUserLists" @emitSelecteduser="emitSelecteduser"></ActiveUsers>
-            <ChatMessages :messageArray="messageArray" :selectedUser="selectedUser" @emitSendMessage="emitSendMessage"></ChatMessages>
+            <ActiveUsers @emitSelectedUser="emitSelectedUser"></ActiveUsers>
+            <ChatMessages v-if="selectedAUser" :messageArray="messageArray" :selectedUser="selectedUser" @emitSendMessage="emitSendMessage"></ChatMessages>
         </div>
     </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import { io } from 'socket.io-client';
 import ActiveUsers from '../../components/chat/ActiveUsers.vue';
 import ChatMessages from '../../components/chat/ChatMessages.vue';
+import { useSocketStore } from '../../store/SocketStore';
+import { onMounted, reactive, computed } from 'vue';
 
-export default {
-    components: {
-        ActiveUsers,
-        ChatMessages
-    },
+let name = ref('Mr_' + parseInt(Math.random() * 100));
+let mySocketId = ref('');
+let selectedUser = ref({});
+let messageArray = reactive({ data: [] });
 
-    data() {
-        return {
-            socket: '',
-            name: 'Mr_' + parseInt(Math.random() * 100),
-            mySocketId: '',
-            selectedUser: {},
-            messageArray: [],
-            activeUserLists: [
-                {
-                    dsd: 4
-                }
-            ]
-        };
-    },
-    mounted() {
-        this.socket = io('http://localhost:3000');
+const socketStore = useSocketStore();
 
-        this.socket.on('connect', () => {
-            this.mySocketId = this.socket.id;
-            // console.log('connected to server. id: ' + this.socket.id);
+onMounted(function () {
+    //joining in the web socket server
+    if (!socketStore.isConnected) {
+        socketStore.socket = io('http://localhost:3000');
+        socketStore.isConnected = true;
+
+        socketStore.socket.on('connect', () => {
+            mySocketId.value = socketStore.socket.id;
+            console.log('connected to server. id: ' + mySocketId.value);
         });
 
         //sending to server
-        this.socket.emit('joined_to_server', { name: this.name });
-
-        //receiving from server
-        this.socket.on('active_users', (users) => {
-            //reactive data will work for only component which is been reloaded...use store to
-            this.activeUserLists = users;
-            //console.log(this.activeUserLists);
-        });
-
-        this.socket.on('messageChannel', (message) => {
-            this.messageArray.push({
-                type: 'incoming_message',
-                message: message
-            });
-        });
-    },
-    methods: {
-        emitSelecteduser(user) {
-            this.selectedUser = user;
-        },
-        emitSendMessage(data) {
-            this.socket.emit('broadcast', data);
-        }
+        socketStore.socket.emit('joined_to_server', { name: name.value });
     }
-};
+
+    //receiving from server
+    socketStore.socket.on('active_users', (users) => {
+        //reactive data will work for only component which is been reloaded...use store to
+        socketStore.activeUsers = users;
+    });
+
+    socketStore.socket.on('messageChannel', (message) => {
+        messageArray.data.push({
+            type: 'incoming_message',
+            message: message
+        });
+        console.log(messageArray.data);
+    });
+});
+
+function emitSelectedUser(user) {
+    messageArray.data = []; //reseting chat on a new user selection
+    selectedUser.value = user;
+}
+function emitSendMessage(data) {
+    socketStore.socket.emit('broadcast', data);
+}
+
+let selectedAUser = computed(function () {
+    return Object.keys(selectedUser.value).length != 0;
+});
 </script>
 
 <style lang="scss">

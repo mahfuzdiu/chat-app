@@ -1,7 +1,7 @@
 <template>
     <div class="active-users-card">
-        <template v-for="user in activeUserLists">
-            <div class="active-users" v-if="mySocketId != user.socket_id" @click="selectedUser(user)">
+        <template v-for="user in socketStore.activeUsers">
+            <div class="active-users" v-if="socketStore.socket.id != user.socket_id" @click="selectedUser(user)">
                 <div class="user-image">
                     <img src="https://placehold.co/40x40" alt="user image" />
                 </div>
@@ -15,15 +15,15 @@
     </div>
 </template>
 
-<script>
-export default {
-    props: ['activeUserLists', 'mySocketId'],
-    methods: {
-        selectedUser(user) {
-            this.$emit('emitSelecteduser', user);
-        }
-    }
-};
+<script setup>
+import { useSocketStore } from '../../store/SocketStore';
+const emit = defineEmits(['emitSelectedUser']);
+
+const socketStore = useSocketStore();
+
+function selectedUser(user) {
+    emit('emitSelectedUser', user);
+}
 </script>
 
 <style lang="scss">
